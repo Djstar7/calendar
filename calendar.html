@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DJSTAR-calendar</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    #calendarContainer {
+      max-width: 900px;
+      margin: 2rem auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fill,minmax(220px,1fr));
+      gap: 1rem;
+      background: #1a202c;
+      padding: 1.5rem;
+      border-radius: 0.75rem;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    }
+  </style>
+</head>
+
+<body class="bg-gray-900 text-gray-100 pt-4">
+  <div class="flex flex-col items-center justify-center min-h-screen px-4 ">
+    <h1 class="mb-2 text-4xl font-bold text-left bg-clip-text text-transparent bg-gradient-to-r from-blue-800 to-blue-200">DJSTAR Calendar</h1>
+    <p class="mb-8 text-lg text-gray-400">Bonjour, bienvenue sur le calendrier monté par DJSTAR</p>
+    
+    <div class="flex items-center justify-center mt-4 sticky top-0 z-20 bg-gray-900 bg-opacity-90 py-4 rounded-b-lg shadow-lg">
+      <select name="indexMonth" id="indexMonth" class="border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition bg-gray-800 text-gray-100">
+        <option value="0">Janvier</option>
+        <option value="1">Février</option>
+        <option value="2">Mars</option>
+        <option value="3">Avril</option>
+        <option value="4">Mai</option>
+        <option value="5">Juin</option>
+        <option value="6">Juillet</option>
+        <option value="7">Août</option>
+        <option value="8">Septembre</option>
+        <option value="9">Octobre</option>
+        <option value="10">Novembre</option>
+        <option value="11">Décembre</option>
+      </select>
+      <input 
+      type="number" 
+      id="numberMonth" 
+      class="border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition bg-gray-800 text-gray-100"
+      />
+      <input 
+      type="number" 
+      id="selectedDate" 
+      class="border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition bg-gray-800 text-gray-100"
+      />
+      <button 
+      onclick="showCalendar()" 
+      class="calendar-btn ml-4 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold transition"
+      >
+      Afficher
+      </button>
+    </div>
+
+    <div id="calendarContainer" class="mt-8"></div>
+  </div>
+
+  <script>
+    const Month = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
+    const week = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
+
+    function showCalendar(){
+      const calendarContainer = document.getElementById('calendarContainer');
+      calendarContainer.innerHTML = '';
+
+      let selectedYear = 2025;
+      const inputDate = document.getElementById('selectedDate').value;
+      if (inputDate) {
+        selectedYear = parseInt(inputDate);
+      }
+      const inputNumberMonth = document.getElementById('numberMonth').value || 1;
+      const indexMonth = parseInt(document.getElementById('indexMonth').value);
+
+
+      let dayStart = 1; // Lundi
+
+      for(let annee = 1; annee <= selectedYear; annee++){
+        const bissextile = (annee % 4 === 0 && annee % 100 !== 0) || (annee % 400 === 0);
+        if(annee == selectedYear){
+            const yearElement = document.createElement('div');
+            yearElement.className = 'text-2xl font-bold text-blue-500 mb-4 col-span-full text-right pr-8';
+            yearElement.innerText = `Année ${annee}`;
+            calendarContainer.appendChild(yearElement);
+        }
+        
+        for(let mois = 0; mois <= 11; mois++){
+          let numberDayMonth;
+          if(mois === 1){
+            numberDayMonth = bissextile ? 29 : 28;
+          } else if(mois === 3 || mois === 5 || mois === 8 || mois === 10){
+            numberDayMonth = 30;
+          } else {
+            numberDayMonth = 31;
+          }
+          if (annee == selectedYear && mois === indexMonth) { 
+            let compteur = inputNumberMonth;
+            let getMonth = mois;
+            while(compteur > 0){
+              if(getMonth === 1){
+                numberDayMonth = bissextile ? 29 : 28;
+              } else if(getMonth === 3 || getMonth === 5 || getMonth === 8 || getMonth === 10){
+                numberDayMonth = 30;
+              } else {
+                numberDayMonth = 31;
+              }
+              const monthElement = document.createElement('div');
+              monthElement.className = 'text-xl font-semibold text-purple-400 mb-2 col-span-full';
+              monthElement.innerText = Month[getMonth];
+              calendarContainer.appendChild(monthElement);
+
+              const weekRow = document.createElement('div');
+              weekRow.className = 'flex justify-between mb-2 col-span-full';
+              for (let i = 0; i < week.length; i++) {
+                const weekDay = document.createElement('div');
+                weekDay.className = 'flex-1 text-sm font-bold text-gray-300';
+                weekDay.innerText = week[i];
+                weekRow.appendChild(weekDay);
+              }
+              calendarContainer.appendChild(weekRow);
+
+              let jour = 1;
+              let finished = false;
+              while (!finished) {
+                const dayRow = document.createElement('div');
+                dayRow.className = 'flex justify-between mb-2 col-span-full';
+
+                for (let i = 0; i < 7; i++) {
+                  const day = document.createElement('div');
+                  day.className = 'flex-1 text-sm font-bold text-gray-300';
+
+                  if ((jour === 1 && i < dayStart) || jour > numberDayMonth) {
+                    day.innerText = '';
+                  } else {
+                    day.innerText = `${jour}`;
+                    jour++;
+                  }
+
+                  dayRow.appendChild(day);
+                }
+
+                calendarContainer.appendChild(dayRow);
+
+                if (jour > numberDayMonth) {
+                  finished = true;
+                  dayStart = (dayStart + numberDayMonth) % 7;
+                  dayRow.className = 'flex justify-between col-span-full mb-4 pb-2 border-b border-gray-700';
+                }
+              }
+
+              getMonth++;
+              compteur--;
+            }
+          } else {
+            dayStart = (dayStart + numberDayMonth) % 7;
+          }
+        }
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('selectedDate').value = 2025;
+      showCalendar();
+    });
+  </script>
+</body>
+</html>
